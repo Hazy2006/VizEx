@@ -5,7 +5,7 @@ Real-time C++ execution visualizer. VizEx is to Python Tutor what GeoGebra is to
 ## Roadmap
 
 **Phase 1 — Usability**
-- [ ] file upload via browser interface
+- [ x ] file upload via browser interface
 - [ ] support for classes and methods
 - [ ] filter standard library noise
 - [ ] improved graph layout for larger files

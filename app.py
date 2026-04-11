@@ -1,5 +1,7 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 import clang.cindex
+import os
+import tempfile
 
 app = Flask(__name__)
 
@@ -21,9 +23,21 @@ def get_call_graph(filepath):
 def index():
     return render_template('index.html')
 
-@app.route('/graph')
+@app.route('/graph', methods=['GET', 'POST'])
 def graph():
-    data = get_call_graph('sp.cpp')
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file:
+            return jsonify({"error": "no file"}), 400
+        tmp = tempfile.NamedTemporaryFile(suffix='.cpp', delete=False)
+        file.save(tmp.name)
+        filepath = tmp.name
+        filename = file.filename
+    else:
+        filepath = 'sp.cpp'
+        filename = 'sp.cpp'
+
+    data = get_call_graph(filepath)
     known = set(data.keys())
     nodes = [{"id": k} for k in known]
     links = []
@@ -31,7 +45,11 @@ def graph():
         for callee in callees:
             if callee in known:
                 links.append({"source": caller, "target": callee})
-    return jsonify({"nodes": nodes, "links": links})
+
+    if request.method == 'POST':
+        os.unlink(filepath)
+
+    return jsonify({"nodes": nodes, "links": links, "filename": filename})
 
 if __name__ == '__main__':
     app.run(debug=True)

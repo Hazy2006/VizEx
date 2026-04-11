@@ -7,133 +7,69 @@
     body { background: #0d1117; font-family: 'JetBrains Mono', monospace; display: flex; height: 100vh; overflow: hidden; }
 
     #sidebar {
-      width: 220px;
-      min-width: 220px;
+      width: 220px; min-width: 220px;
       background: #161b22;
       border-right: 1px solid #30363d;
-      display: flex;
-      flex-direction: column;
-      padding: 24px 16px;
-      gap: 24px;
+      display: flex; flex-direction: column;
+      padding: 24px 16px; gap: 24px;
     }
+    #sidebar .logo { font-size: 20px; font-weight: 700; color: #58a6ff; letter-spacing: 0.05em; }
+    #sidebar .logo span { color: #3fb950; }
+    #sidebar .meta { font-size: 11px; color: #8b949e; line-height: 1.8; }
+    #sidebar .meta .label { color: #58a6ff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    #sidebar .meta .value { color: #e6edf3; font-size: 12px; }
+    #sidebar .legend { display: flex; flex-direction: column; gap: 8px; }
+    #sidebar .legend .label { color: #58a6ff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    #sidebar .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #8b949e; }
+    #sidebar .legend-dot { width: 10px; height: 10px; border-radius: 50%; background: #1f6feb; border: 1.5px solid #58a6ff; flex-shrink: 0; }
+    #sidebar .legend-line { width: 20px; height: 2px; background: #58a6ff; flex-shrink: 0; }
 
-    #sidebar .logo {
-      font-size: 20px;
-      font-weight: 700;
-      color: #58a6ff;
-      letter-spacing: 0.05em;
+    .upload-area {
+      border: 1px dashed #30363d;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
     }
-
-    #sidebar .logo span {
-      color: #3fb950;
-    }
-
-    #sidebar .meta {
-      font-size: 11px;
-      color: #8b949e;
-      line-height: 1.8;
-    }
-
-    #sidebar .meta .label {
-      color: #58a6ff;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 4px;
-    }
-
-    #sidebar .meta .value {
-      color: #e6edf3;
-      font-size: 12px;
-    }
-
-    #sidebar .legend {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    #sidebar .legend .label {
-      color: #58a6ff;
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 4px;
-    }
-
-    #sidebar .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: #8b949e;
-    }
-
-    #sidebar .legend-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #1f6feb;
-      border: 1.5px solid #58a6ff;
-      flex-shrink: 0;
-    }
-
-    #sidebar .legend-line {
-      width: 20px;
-      height: 2px;
-      background: #58a6ff;
-      flex-shrink: 0;
-    }
+    .upload-area:hover { border-color: #58a6ff; }
+    .upload-area input { display: none; }
+    .upload-area .upload-label { font-size: 11px; color: #8b949e; cursor: pointer; }
+    .upload-area .upload-label span { color: #58a6ff; }
 
     #canvas { flex: 1; position: relative; }
     svg { width: 100%; height: 100%; }
-
-    .link {
-      stroke: #30363d;
-      stroke-width: 1.5px;
-      marker-end: url(#arrow);
-      transition: stroke 0.2s;
-    }
+    .link { stroke: #30363d; stroke-width: 1.5px; marker-end: url(#arrow); transition: stroke 0.2s; }
     .link.highlighted { stroke: #58a6ff; stroke-width: 2px; }
-
-    .node circle {
-      fill: #1f6feb;
-      stroke: #58a6ff;
-      stroke-width: 1.5px;
-      transition: fill 0.2s, filter 0.2s;
-      filter: drop-shadow(0 0 4px #1f6feb88);
-    }
-    .node.highlighted circle {
-      fill: #58a6ff;
-      filter: drop-shadow(0 0 10px #58a6ffcc);
-    }
+    .node circle { fill: #1f6feb; stroke: #58a6ff; stroke-width: 1.5px; transition: fill 0.2s, filter 0.2s; filter: drop-shadow(0 0 4px #1f6feb88); }
+    .node.highlighted circle { fill: #58a6ff; filter: drop-shadow(0 0 10px #58a6ffcc); }
     .node.dimmed circle { fill: #0d2a4a; stroke: #30363d; filter: none; }
-
-    .node text {
-      fill: #e6edf3;
-      font-size: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      pointer-events: none;
-    }
+    .node text { fill: #e6edf3; font-size: 12px; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .node.dimmed text { fill: #30363d; }
   </style>
 </head>
 <body>
   <div id="sidebar">
     <div class="logo">Viz<span>Ex</span></div>
+
+    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept=".cpp">
+      <div class="upload-label">Drop or <span>browse</span> a .cpp file</div>
+    </div>
+
     <div class="meta">
       <div class="label">File</div>
-      <div class="value">sp.cpp</div>
+      <div class="value" id="filename-display">sp.cpp</div>
     </div>
     <div class="meta">
       <div class="label">Language</div>
       <div class="value">C++</div>
     </div>
-    <div class="meta" id="node-count">
+    <div class="meta">
       <div class="label">Functions</div>
       <div class="value" id="fn-count">—</div>
     </div>
-    <div class="meta" id="edge-count">
+    <div class="meta">
       <div class="label">Calls</div>
       <div class="value" id="call-count">—</div>
     </div>
@@ -144,58 +80,57 @@
     </div>
   </div>
 
-  <div id="canvas">
-    <svg id="graph"></svg>
-  </div>
+  <div id="canvas"><svg id="graph"></svg></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script>
-    const canvas = document.getElementById('canvas');
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    let currentSim = null;
 
-    const svg = d3.select("#graph").attr("width", width).attr("height", height);
-
-    svg.append("defs").append("marker")
-      .attr("id", "arrow").attr("viewBox", "0 -5 10 10")
-      .attr("refX", 22).attr("refY", 0)
-      .attr("markerWidth", 6).attr("markerHeight", 6)
-      .attr("orient", "auto")
-      .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#30363d");
-
-    svg.append("defs").append("marker")
-      .attr("id", "arrow-highlighted").attr("viewBox", "0 -5 10 10")
-      .attr("refX", 22).attr("refY", 0)
-      .attr("markerWidth", 6).attr("markerHeight", 6)
-      .attr("orient", "auto")
-      .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#58a6ff");
-
-    fetch('/graph').then(r => r.json()).then(data => {
+    function renderGraph(data) {
       document.getElementById('fn-count').textContent = data.nodes.length;
       document.getElementById('call-count').textContent = data.links.length;
+      document.getElementById('filename-display').textContent = data.filename;
+
+      const canvas = document.getElementById('canvas');
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      d3.select("#graph").selectAll("*").remove();
+      const svg = d3.select("#graph").attr("width", width).attr("height", height);
+
+      svg.append("defs").append("marker")
+        .attr("id", "arrow").attr("viewBox", "0 -5 10 10")
+        .attr("refX", 22).attr("refY", 0)
+        .attr("markerWidth", 6).attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#30363d");
+
+      svg.append("defs").append("marker")
+        .attr("id", "arrow-highlighted").attr("viewBox", "0 -5 10 10")
+        .attr("refX", 22).attr("refY", 0)
+        .attr("markerWidth", 6).attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#58a6ff");
 
       const nodeIds = new Set(data.nodes.map(n => n.id));
       const links = data.links.filter(l => nodeIds.has(l.source) && nodeIds.has(l.target));
 
-      const sim = d3.forceSimulation(data.nodes)
+      if (currentSim) currentSim.stop();
+      currentSim = d3.forceSimulation(data.nodes)
         .force("link", d3.forceLink(links).id(d => d.id).distance(160))
         .force("charge", d3.forceManyBody().strength(-400))
         .force("center", d3.forceCenter(width / 2, height / 2));
 
-      const link = svg.append("g").selectAll("line")
-        .data(links).enter().append("line")
-        .attr("class", "link")
-        .attr("marker-end", "url(#arrow)");
+      const link = svg.append("g").selectAll("line").data(links).enter().append("line")
+        .attr("class", "link").attr("marker-end", "url(#arrow)");
 
-      const node = svg.append("g").selectAll("g")
-        .data(data.nodes).enter().append("g").attr("class", "node")
+      const node = svg.append("g").selectAll("g").data(data.nodes).enter().append("g").attr("class", "node")
         .call(d3.drag()
-          .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+          .on("start", (e, d) => { if (!e.active) currentSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
           .on("drag", (e, d) => { d.fx = Math.max(20, Math.min(width - 20, e.x)); d.fy = Math.max(20, Math.min(height - 20, e.y)); })
-          .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); }))
+          .on("end", (e, d) => { if (!e.active) currentSim.alphaTarget(0); }))
         .on("mouseover", (e, d) => {
-          const connected = new Set();
-          connected.add(d.id);
+          const connected = new Set([d.id]);
           links.forEach(l => {
             if (l.source.id === d.id) connected.add(l.target.id);
             if (l.target.id === d.id) connected.add(l.source.id);
@@ -213,7 +148,7 @@
       node.append("circle").attr("r", 18);
       node.append("text").attr("dy", 35).attr("text-anchor", "middle").text(d => d.id);
 
-      sim.on("tick", () => {
+      currentSim.on("tick", () => {
         data.nodes.forEach(d => {
           d.x = Math.max(20, Math.min(width - 20, d.x));
           d.y = Math.max(20, Math.min(height - 20, d.y));
@@ -222,7 +157,19 @@
             .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
         node.attr("transform", d => `translate(${d.x},${d.y})`);
       });
+    }
+
+    document.getElementById('file-input').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      fetch('/graph', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(renderGraph);
     });
+
+    fetch('/graph').then(r => r.json()).then(renderGraph);
   </script>
 </body>
 </html>

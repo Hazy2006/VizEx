@@ -5,7 +5,36 @@ import tempfile
 
 app = Flask(__name__)
 
+def get_class_data(filepath):
+    idx = clang.cindex.Index.create()
+    tu = idx.parse(filepath)
 
+    classes = {}
+
+    for n in tu.cursor.get_children():
+        if n.location.file and n.location.file.name == filepath:
+            if n.kind == clang.cindex.CursorKind.CLASS_DECL:
+
+                bases = []
+                fields = []
+                methods = []
+
+                for child in n.get_children():
+                    if child.kind == clang.cindex.CursorKind.CXX_BASE_SPECIFIER:
+                        bases.append(child.spelling)
+                    elif child.kind == clang.cindex.CursorKind.FIELD_DECL:
+                        fields.append({"name": child.spelling, "type": child.type.spelling})
+                    elif child.kind == clang.cindex.CursorKind.CXX_METHOD:
+                        methods.append({"name": child.spelling, "return_type": child.result_type.spelling})
+
+                classes[n.spelling] = {
+                    "bases": bases,
+                    "fields": fields,
+                    "methods": methods
+                }
+
+    return classes
+    
 def get_call_graph(filepath):
     """
     Parses a C++ file and returns a dict mapping each function to the list

@@ -4,8 +4,11 @@
   <title>VizEx</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Full-viewport layout: sidebar on the left, SVG canvas fills the rest */
     body { background: #0d1117; font-family: 'JetBrains Mono', monospace; display: flex; height: 100vh; overflow: hidden; }
 
+    /* ── Sidebar ─────────────────────────────────────────────────────────── */
     #sidebar {
       width: 220px; min-width: 220px;
       background: #161b22;
@@ -14,16 +17,21 @@
       padding: 24px 16px; gap: 24px;
     }
     #sidebar .logo { font-size: 20px; font-weight: 700; color: #58a6ff; letter-spacing: 0.05em; }
-    #sidebar .logo span { color: #3fb950; }
+    #sidebar .logo span { color: #3fb950; }  /* green accent on "Ex" */
+
+    /* Small metadata rows (file name, language, counts) */
     #sidebar .meta { font-size: 11px; color: #8b949e; line-height: 1.8; }
     #sidebar .meta .label { color: #58a6ff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
     #sidebar .meta .value { color: #e6edf3; font-size: 12px; }
+
+    /* Legend section */
     #sidebar .legend { display: flex; flex-direction: column; gap: 8px; }
     #sidebar .legend .label { color: #58a6ff; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
     #sidebar .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #8b949e; }
     #sidebar .legend-dot { width: 10px; height: 10px; border-radius: 50%; background: #1f6feb; border: 1.5px solid #58a6ff; flex-shrink: 0; }
     #sidebar .legend-line { width: 20px; height: 2px; background: #58a6ff; flex-shrink: 0; }
 
+    /* ── File upload area ─────────────────────────────────────────────────── */
     .upload-area {
       border: 1px dashed #30363d;
       border-radius: 6px;
@@ -33,17 +41,24 @@
       transition: border-color 0.2s;
     }
     .upload-area:hover { border-color: #58a6ff; }
-    .upload-area input { display: none; }
+    .upload-area input { display: none; }  /* hidden — triggered by the label click */
     .upload-area .upload-label { font-size: 11px; color: #8b949e; cursor: pointer; }
     .upload-area .upload-label span { color: #58a6ff; }
 
+    /* ── Graph canvas ─────────────────────────────────────────────────────── */
     #canvas { flex: 1; position: relative; }
     svg { width: 100%; height: 100%; }
+
+    /* Edges between nodes */
     .link { stroke: #30363d; stroke-width: 1.5px; marker-end: url(#arrow); transition: stroke 0.2s; }
     .link.highlighted { stroke: #58a6ff; stroke-width: 2px; }
+
+    /* Node circles */
     .node circle { fill: #1f6feb; stroke: #58a6ff; stroke-width: 1.5px; transition: fill 0.2s, filter 0.2s; filter: drop-shadow(0 0 4px #1f6feb88); }
     .node.highlighted circle { fill: #58a6ff; filter: drop-shadow(0 0 10px #58a6ffcc); }
-    .node.dimmed circle { fill: #0d2a4a; stroke: #30363d; filter: none; }
+    .node.dimmed circle { fill: #0d2a4a; stroke: #30363d; filter: none; }  /* inactive nodes fade out on hover */
+
+    /* Node labels */
     .node text { fill: #e6edf3; font-size: 12px; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
     .node.dimmed text { fill: #30363d; }
   </style>
@@ -52,11 +67,13 @@
   <div id="sidebar">
     <div class="logo">Viz<span>Ex</span></div>
 
+    <!-- Clicking the upload area triggers the hidden file input -->
     <div class="upload-area" onclick="document.getElementById('file-input').click()">
       <input type="file" id="file-input" accept=".cpp">
       <div class="upload-label">Drop or <span>browse</span> a .cpp file</div>
     </div>
 
+    <!-- These values are populated dynamically by renderGraph() -->
     <div class="meta">
       <div class="label">File</div>
       <div class="value" id="filename-display">sp.cpp</div>
@@ -73,6 +90,7 @@
       <div class="label">Calls</div>
       <div class="value" id="call-count">—</div>
     </div>
+
     <div class="legend">
       <div class="label">Legend</div>
       <div class="legend-item"><div class="legend-dot"></div> Function node</div>
@@ -80,13 +98,17 @@
     </div>
   </div>
 
+  <!-- The SVG fills this div — D3 draws everything inside it -->
   <div id="canvas"><svg id="graph"></svg></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script>
+    // Keep a reference to the active simulation so we can stop it before
+    // re-rendering when a new file is uploaded
     let currentSim = null;
 
     function renderGraph(data) {
+      // Update sidebar stats
       document.getElementById('fn-count').textContent = data.nodes.length;
       document.getElementById('call-count').textContent = data.links.length;
       document.getElementById('filename-display').textContent = data.filename;
@@ -95,9 +117,14 @@
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
 
+      // Clear the previous graph before drawing the new one
       d3.select("#graph").selectAll("*").remove();
       const svg = d3.select("#graph").attr("width", width).attr("height", height);
 
+      // ── Arrow markers ──────────────────────────────────────────────────────
+      // SVG <marker> elements define reusable arrowheads.
+      // We define two: one for default edges, one for highlighted edges.
+      // refX=22 offsets the tip so it lands at the circle edge (radius=18 + stroke)
       svg.append("defs").append("marker")
         .attr("id", "arrow").attr("viewBox", "0 -5 10 10")
         .attr("refX", 22).attr("refY", 0)
@@ -112,63 +139,101 @@
         .attr("orient", "auto")
         .append("path").attr("d", "M0,-5L10,0L0,5").attr("fill", "#58a6ff");
 
+      // Filter out any links that reference nodes not in the dataset
+      // (defensive — the backend should already do this, but just in case)
       const nodeIds = new Set(data.nodes.map(n => n.id));
       const links = data.links.filter(l => nodeIds.has(l.source) && nodeIds.has(l.target));
 
+      // ── Force simulation ───────────────────────────────────────────────────
+      // D3's force simulation treats nodes as particles and applies forces:
+      //   - forceLink: pulls connected nodes toward each other (like springs)
+      //   - forceManyBody: repels all nodes from each other (like charge)
+      //   - forceCenter: pulls everything toward the canvas center (prevents drift)
       if (currentSim) currentSim.stop();
       currentSim = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(160))
-        .force("charge", d3.forceManyBody().strength(-400))
+        .force("link", d3.forceLink(links).id(d => d.id).distance(160))  // preferred edge length
+        .force("charge", d3.forceManyBody().strength(-400))               // repulsion strength
         .force("center", d3.forceCenter(width / 2, height / 2));
 
+      // ── Draw edges ─────────────────────────────────────────────────────────
+      // Lines are drawn BEFORE nodes so nodes render on top
       const link = svg.append("g").selectAll("line").data(links).enter().append("line")
         .attr("class", "link").attr("marker-end", "url(#arrow)");
 
+      // ── Draw nodes ─────────────────────────────────────────────────────────
+      // Each node is a <g> (group) containing a <circle> and a <text> label
       const node = svg.append("g").selectAll("g").data(data.nodes).enter().append("g").attr("class", "node")
+
+        // Drag behavior: pin the node while dragging (fx/fy = fixed position),
+        // release it after drag ends (set fx/fy back to null so simulation can move it)
         .call(d3.drag()
           .on("start", (e, d) => { if (!e.active) currentSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on("drag", (e, d) => { d.fx = Math.max(20, Math.min(width - 20, e.x)); d.fy = Math.max(20, Math.min(height - 20, e.y)); })
-          .on("end", (e, d) => { if (!e.active) currentSim.alphaTarget(0); }))
+          .on("drag",  (e, d) => { d.fx = Math.max(20, Math.min(width - 20, e.x)); d.fy = Math.max(20, Math.min(height - 20, e.y)); })
+          .on("end",   (e, d) => { if (!e.active) currentSim.alphaTarget(0); }))
+          // Note: drag "end" does NOT clear fx/fy — nodes stay pinned where you drop them
+
+        // Hover: highlight the hovered node + its direct neighbors, dim everything else
         .on("mouseover", (e, d) => {
+          // Build the set of connected node IDs (hovered node + its immediate neighbors)
           const connected = new Set([d.id]);
           links.forEach(l => {
             if (l.source.id === d.id) connected.add(l.target.id);
             if (l.target.id === d.id) connected.add(l.source.id);
           });
+
           node.classed("highlighted", n => n.id === d.id);
-          node.classed("dimmed", n => !connected.has(n.id));
+          node.classed("dimmed",      n => !connected.has(n.id));
           link.classed("highlighted", l => l.source.id === d.id || l.target.id === d.id);
-          link.attr("marker-end", l => (l.source.id === d.id || l.target.id === d.id) ? "url(#arrow-highlighted)" : "url(#arrow)");
+
+          // Swap the arrowhead marker on highlighted edges
+          link.attr("marker-end", l =>
+            (l.source.id === d.id || l.target.id === d.id) ? "url(#arrow-highlighted)" : "url(#arrow)"
+          );
         })
         .on("mouseout", () => {
+          // Reset everything to default state
           node.classed("highlighted", false).classed("dimmed", false);
           link.classed("highlighted", false).attr("marker-end", "url(#arrow)");
         });
 
-      node.append("circle").attr("r", 18);
-      node.append("text").attr("dy", 35).attr("text-anchor", "middle").text(d => d.id);
+      node.append("circle").attr("r", 18);  // radius 18px
+      node.append("text")
+        .attr("dy", 35)                // place label 35px below the circle center
+        .attr("text-anchor", "middle")
+        .text(d => d.id);
 
+      // ── Simulation tick ────────────────────────────────────────────────────
+      // On every simulation step, update the SVG positions of nodes and edges.
+      // We also clamp positions so nodes can't drift off-screen.
       currentSim.on("tick", () => {
         data.nodes.forEach(d => {
           d.x = Math.max(20, Math.min(width - 20, d.x));
           d.y = Math.max(20, Math.min(height - 20, d.y));
         });
-        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+
+        link
+          .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+
         node.attr("transform", d => `translate(${d.x},${d.y})`);
       });
     }
 
+    // ── File upload handler ────────────────────────────────────────────────
+    // When the user selects a file, POST it to /graph and re-render the graph
     document.getElementById('file-input').addEventListener('change', function() {
       const file = this.files[0];
       if (!file) return;
+
       const formData = new FormData();
       formData.append('file', file);
+
       fetch('/graph', { method: 'POST', body: formData })
         .then(r => r.json())
         .then(renderGraph);
     });
 
+    // On page load, fetch and render the default sample graph (sp.cpp)
     fetch('/graph').then(r => r.json()).then(renderGraph);
   </script>
 </body>

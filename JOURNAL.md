@@ -172,4 +172,4 @@ Eventually moved to PyCharm on Windows. Sanity partially restored.
 
 ---
 
-*Last updated: 16 May 2025*
+*Last updated: 17 May 2026*

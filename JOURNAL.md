@@ -155,9 +155,9 @@ Replaced regex parsing with libclang Python bindings. `get_call_graph()` in `app
 ## War Stories
 The early prototype was built on Ubuntu. It was character-building.
 
-- Terminal overhead — Linux CLI is unforgiving if you're not fluent. Wrong flags, wrong paths, cryptic errors. A lot of time went into just navigating the environment rather than building.
-- libclang setup — getting the Python bindings to actually find the shared library (libclang.so) was painful. It doesn't just work out of the box; library paths, version - mismatches, and environment variables all conspire against you.
-- Ego damage — the gap between "I'll just parse C++ files" and "ok why does libclang not see anything" is humbling.
+- **Terminal overhead** — Linux CLI is unforgiving if you're not fluent. Wrong flags, wrong paths, cryptic errors. A lot of time went into just navigating the environment rather than building.
+- **libclang setup** — getting the Python bindings to actually find the shared library (libclang.so) was painful. It doesn't just work out of the box; library paths, version - mismatches, and environment variables all conspire against you.
+- **Ego damage** — the gap between "I'll just parse C++ files" and "ok why does libclang not see anything" is humbling.
 SVG/D3 layout bugs — early graph renders had overlapping nodes and interfaces colliding. D3's force simulation needs tuning (charge strength, link distance, collision radius) before it looks like anything useful.
 
 Eventually moved to PyCharm on Windows. Sanity partially restored.
